@@ -1,5 +1,5 @@
 <!--
-  Author: __AUTHOR_NAME__ <__AUTHOR_EMAIL__>
+  Author: Ammar Bin Mahmud <@abmprottoy>
   Project: Onnorokom School Admission Portal
 -->
 
@@ -65,7 +65,7 @@ npm test
 
 ---
 
-## 4. API Overview (§1.4)
+## 4. API Overview
 
 | # | Method & Path | Header | Description |
 | :--- | :--- | :--- | :--- |
