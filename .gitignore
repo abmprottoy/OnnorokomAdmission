@@ -1,0 +1,24 @@
+# Author: Ammar Bin Mahmud <@abmprottoy>
+# Project: Onnorokom School Admission Portal
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+TestResults/
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env.local
+.env.*.local
+
+# OS / Editor
+.DS_Store
+Thumbs.db
