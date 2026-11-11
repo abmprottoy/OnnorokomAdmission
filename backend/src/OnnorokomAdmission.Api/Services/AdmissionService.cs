@@ -14,7 +14,7 @@ namespace OnnorokomAdmission.Api.Services;
 
 public partial class AdmissionService
 {
-    private static readonly SemaphoreSlim FallbackLock = new(1, 1);
+    private static readonly SemaphoreSlim SqliteTestLock = new(1, 1);
     private readonly AdmissionDbContext _db;
     private readonly AdmissionSettings _settings;
 
@@ -159,15 +159,18 @@ public partial class AdmissionService
     // 4. POST /classes/{classId}/holds
     public async Task<(int StatusCode, object Body)> CreateHoldAsync(string classId, string studentId, CancellationToken ct = default)
     {
-        var isPostgres = _db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
-
-        if (!isPostgres)
-        {
-            await FallbackLock.WaitAsync(ct);
-        }
+        await SqliteTestLock.WaitAsync(ct);
+        var lockHeld = true;
 
         try
         {
+            var isPostgres = _db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
+            if (isPostgres)
+            {
+                SqliteTestLock.Release();
+                lockHeld = false;
+            }
+
             await using var transaction = _db.Database.IsRelational()
                 ? await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
                 : null;
@@ -176,7 +179,7 @@ public partial class AdmissionService
             if (isPostgres)
             {
                 // PostgreSQL Pessimistic Row-Level Lock (SELECT ... FOR UPDATE)
-                // Ensures strict serialization per class across multiple threads AND multiple backend processes
+                // Ensures strict serialization per class across multiple threads AND multiple backend processes (§1.6 Bonus)
                 targetClass = await _db.Classes
                     .FromSqlInterpolated($"SELECT * FROM classes WHERE id = {classId} FOR UPDATE")
                     .FirstOrDefaultAsync(ct);
@@ -261,9 +264,9 @@ public partial class AdmissionService
         }
         finally
         {
-            if (!isPostgres)
+            if (lockHeld)
             {
-                FallbackLock.Release();
+                SqliteTestLock.Release();
             }
         }
     }
@@ -291,14 +294,18 @@ public partial class AdmissionService
     // 6. POST /holds/{holdId}/confirm
     public async Task<(int StatusCode, object Body)> ConfirmHoldAsync(string holdId, string studentId, CancellationToken ct = default)
     {
-        var isPostgres = _db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
-        if (!isPostgres)
-        {
-            await FallbackLock.WaitAsync(ct);
-        }
+        await SqliteTestLock.WaitAsync(ct);
+        var lockHeld = true;
 
         try
         {
+            var isPostgres = _db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
+            if (isPostgres)
+            {
+                SqliteTestLock.Release();
+                lockHeld = false;
+            }
+
             await using var transaction = _db.Database.IsRelational()
                 ? await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
                 : null;
@@ -361,9 +368,9 @@ public partial class AdmissionService
         }
         finally
         {
-            if (!isPostgres)
+            if (lockHeld)
             {
-                FallbackLock.Release();
+                SqliteTestLock.Release();
             }
         }
     }
@@ -371,14 +378,18 @@ public partial class AdmissionService
     // 7. DELETE /holds/{holdId}
     public async Task<(int StatusCode, object? Body)> CancelHoldAsync(string holdId, string studentId, CancellationToken ct = default)
     {
-        var isPostgres = _db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
-        if (!isPostgres)
-        {
-            await FallbackLock.WaitAsync(ct);
-        }
+        await SqliteTestLock.WaitAsync(ct);
+        var lockHeld = true;
 
         try
         {
+            var isPostgres = _db.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true;
+            if (isPostgres)
+            {
+                SqliteTestLock.Release();
+                lockHeld = false;
+            }
+
             await using var transaction = _db.Database.IsRelational()
                 ? await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
                 : null;
@@ -439,9 +450,9 @@ public partial class AdmissionService
         }
         finally
         {
-            if (!isPostgres)
+            if (lockHeld)
             {
-                FallbackLock.Release();
+                SqliteTestLock.Release();
             }
         }
     }
