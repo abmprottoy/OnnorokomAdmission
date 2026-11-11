@@ -4,6 +4,7 @@
 - **Tool:** Google AI Studio
 - **Model:** Gemini 4 Argon
 - **Parts Used:** Initial scaffolding of DTO contracts, React component layout styling (Tailwind / customized `shadcn/ui` patterns), and boilerplate test setup.
+Also helped with writing documentations.
 
 ### 2. Where AI Made Mistakes & How I Caught and Fixed Them
 
